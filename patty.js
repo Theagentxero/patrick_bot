@@ -28,24 +28,36 @@ function botscore(value){
     return score;
 }
 
-function checkMessageForCommand(msg){
+async function checkMessageForCommand(msg){
     // check if bot command and dont respond to yourself
-    config.prefix.forEach((pf) => {
+    var prefixes = config.prefix;
+    console.log(prefixes);
+    var foundOne = false;
+    for(let pf of prefixes){
         if( msg.content.startsWith(pf) && !msg.author.bot && !(msg.author == client.user)){
             //parse and return commands
-            return true;
+            foundOne = true;
+            return pf;
+            break;
+            
         }
-    })
-    config.angryPrefix.forEach((pf) => {
+    }
+    for(let pf of config.angryPrefix){
         if( msg.content.startsWith(pf) && !msg.author.bot && !(msg.author == client.user)){
             //Patrick Becomes Irrate, Being Called The Krusty Krab
-            var sendThis = new ImageEmbed("NO, THIS IS PATRICK", 'I am not a krusty krab...\nPlease Use ' + config.prefix[0] + ' to make !pat requests.', "https://i.imgur.com/iukRzk7.gif").discordEmbedModel();
-            
-            msg.channel.send(sendThis);   
-            return false;
+            var sendThis = await new ImageEmbed("NO, THIS IS PATRICK", 'I am not a krusty krab...\nPlease Use ' + config.prefix[0] + ' to make !pat requests.', "https://i.imgur.com/iukRzk7.gif").discordEmbedModel();
+            msg.channel.send(sendThis); 
+            return null;
+            break;
         }
-    })
+    }
     return false;
+    if(foundOne == true){
+        return true;
+    }else{
+        return false;
+    }
+    
 }
 
 class QuickEmbed {
@@ -260,11 +272,12 @@ function commandSyntaxErrorDisplay( cmdobj ){
     return new ThumbEmbed("Missing Input", cmdobj.name + " requires an input.\nCommand Syntax Described As" + "```" + config.prefix[0] + " " + cmdobj.name + " " + cmdobj.inputType + "```", "https://i.ytimg.com/vi/Iyn-0af_hlI/hqdefault.jpg").discordEmbedModel();
 }
 
-async function parseCommand(msg){
+async function parseCommand(msg, matchedOn){
+    console.log("Matched Prefix: " + matchedOn)
     var contentRaw = msg.content;
     //console.log(msg.content);
     //discard config string
-    var com = contentRaw.slice(config.prefix[0].length + 1).split(" ");
+    var com = contentRaw.slice(matchedOn.length + 1).split(" ");
     var seek = com[0].toUpperCase();
     var match = commands.filter((c) => c.name.toUpperCase() == seek)[0];
     //console.log(match);
@@ -298,9 +311,10 @@ client.on('ready', () =>{
 
 
 client.on('message',async msg => {
-    if(checkMessageForCommand(msg)){
+    var matches = await checkMessageForCommand(msg);
+    if(matches){
         console.log("Oh Boy 3am");
-        var sendThis = await parseCommand(msg);
+        var sendThis = await parseCommand(msg, matches);
         // happy patrick: "http://giphygifs.s3.amazonaws.com/media/13k4VSc3ngLPUY/giphy.gif"
         //"https://i.imgur.com/jzc9UkS.gif"
         //dumb patrick "http://giphygifs.s3.amazonaws.com/media/LnKa2WLkd6eAM/giphy.gif"

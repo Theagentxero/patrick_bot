@@ -39,7 +39,7 @@ function checkMessageForCommand(msg){
     config.angryPrefix.forEach((pf) => {
         if( msg.content.startsWith(pf) && !msg.author.bot && !(msg.author == client.user)){
             //Patrick Becomes Irrate, Being Called The Krusty Krab
-            var sendThis = await new ImageEmbed("NO, THIS IS PATRICK", 'I am not a krusty krab...\nPlease Use ' + config.prefix[0] + ' to make !pat requests.', "https://i.imgur.com/iukRzk7.gif").discordEmbedModel();
+            var sendThis = new ImageEmbed("NO, THIS IS PATRICK", 'I am not a krusty krab...\nPlease Use ' + config.prefix[0] + ' to make !pat requests.', "https://i.imgur.com/iukRzk7.gif").discordEmbedModel();
             
             msg.channel.send(sendThis);   
             return false;

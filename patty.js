@@ -9,7 +9,8 @@ const fs = require('fs');
  *      "token": "YOUR-BOT-TOKEN",
  *      "client_id": "BOT-CLIENT-ID",
  *      "secret": "BOT-SECRET",
- *      "prefix": "!patrick"
+ *      "prefix": ["!patrick"],
+ *      "angryPrefix" : [],
  *  }
 */
 
@@ -29,12 +30,22 @@ function botscore(value){
 
 function checkMessageForCommand(msg){
     // check if bot command and dont respond to yourself
-    if(msg.content.startsWith(config.prefix) && !msg.author.bot && !(msg.author == client.user)){
-        //parse and return commands
-        return true;
-    }else{
-        return false;
-    }
+    config.prefix.forEach((pf) => {
+        if( msg.content.startsWith(pf) && !msg.author.bot && !(msg.author == client.user)){
+            //parse and return commands
+            return true;
+        }
+    })
+    config.angryPrefix.forEach((pf) => {
+        if( msg.content.startsWith(pf) && !msg.author.bot && !(msg.author == client.user)){
+            //Patrick Becomes Irrate, Being Called The Krusty Krab
+            var sendThis = await new ImageEmbed("NO, THIS IS PATRICK", 'I am not a krusty krab...\nPlease Use ' + config.prefix[0] + ' to make !pat requests.', "https://i.imgur.com/iukRzk7.gif").discordEmbedModel();
+            
+            msg.channel.send(sendThis);   
+            return false;
+        }
+    })
+    return false;
 }
 
 class QuickEmbed {
@@ -90,7 +101,7 @@ class Commands extends Array{
         var list = "";
         super.forEach(elm => {
             //start the syntax description
-            var commandsyntax = "`" + config.prefix + " " + elm.name;
+            var commandsyntax = "`" + config.prefix[0] + " " + elm.name;
             if( 'inputType' in elm ){
                 commandsyntax = commandsyntax + " " + elm.inputType;
             }
@@ -246,19 +257,19 @@ function initCommands(){
 
 
 function commandSyntaxErrorDisplay( cmdobj ){
-    return new ThumbEmbed("Missing Input", cmdobj.name + " requires an input.\nCommand Syntax Described As" + "```" + config.prefix + " " + cmdobj.name + " " + cmdobj.inputType + "```", "https://i.ytimg.com/vi/Iyn-0af_hlI/hqdefault.jpg").discordEmbedModel();
+    return new ThumbEmbed("Missing Input", cmdobj.name + " requires an input.\nCommand Syntax Described As" + "```" + config.prefix[0] + " " + cmdobj.name + " " + cmdobj.inputType + "```", "https://i.ytimg.com/vi/Iyn-0af_hlI/hqdefault.jpg").discordEmbedModel();
 }
 
 async function parseCommand(msg){
     var contentRaw = msg.content;
     //console.log(msg.content);
     //discard config string
-    var com = contentRaw.slice(config.prefix.length + 1).split(" ");
+    var com = contentRaw.slice(config.prefix[0].length + 1).split(" ");
     var seek = com[0].toUpperCase();
     var match = commands.filter((c) => c.name.toUpperCase() == seek)[0];
     //console.log(match);
     if(!match){
-        return new ImageEmbed("Me No Understand","For a list of commands type: ```" + config.prefix + " help```", "http://giphygifs.s3.amazonaws.com/media/LnKa2WLkd6eAM/giphy.gif").discordEmbedModel();
+        return new ImageEmbed("Me No Understand","For a list of commands type: ```" + config.prefix[0] + " help```", "http://giphygifs.s3.amazonaws.com/media/LnKa2WLkd6eAM/giphy.gif").discordEmbedModel();
     }else{
         if('inputType' in match){
             //Validate Input and Run Trigger With Input
